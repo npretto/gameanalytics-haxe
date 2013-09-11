@@ -45,7 +45,7 @@ class GameAnalytics {
 	static public var RUN_IN_EDITOR_PLAY_MODE : Bool = false;
 	static var public_key : String;
 	static var private_key : String;
-	static var BUILD : String;
+	static var build : String;
 	static var user_id : String;
 	static var session_id : String;
 	static var initialized : Bool = false;
@@ -68,12 +68,12 @@ class GameAnalytics {
 	static public function init(public_key : String, private_key : String, build : String, user_id : String, session_id : String = null) : Void {
 		GameAnalytics.public_key = public_key;
 		GameAnalytics.private_key = private_key;
-		GameAnalytics.BUILD = build;
+		GameAnalytics.build = build;
 		GameAnalytics.user_id = user_id;
 		GameAnalytics.session_id = session_id != (null) ? session_id : Date.now()+ "x" + (Std.int(Math.random() * 1000000) >> 0);
 		if(GameAnalytics.public_key == null || GameAnalytics.public_key.length == 0) throw new GameAnalyticsError("'public key' cannot be empty or null.");
 		if(GameAnalytics.private_key == null || GameAnalytics.private_key.length == 0) throw new GameAnalyticsError("'private key' cannot be empty or null.");
-		if(GameAnalytics.BUILD == null || GameAnalytics.BUILD.length == 0) throw new GameAnalyticsError("'build' cannot be empty or null.");
+		if(GameAnalytics.build == null || GameAnalytics.build.length == 0) throw new GameAnalyticsError("'build' cannot be empty or null.");
 		if(GameAnalytics.user_id == null || GameAnalytics.user_id.length == 0) throw new GameAnalyticsError("'user_id' cannot be empty or null.");
 		if(GameAnalytics.session_id == null || GameAnalytics.session_id.length == 0) throw new GameAnalyticsError("'session_id' cannot be empty or null.");
 		initialized = true;
@@ -102,7 +102,7 @@ class GameAnalytics {
 		if(Reflect.hasField(event,"build")) throw new GameAnalyticsError("Property 'build' is found on the event, but the name is reserved for Build name, which is set at init.");
 		if(Reflect.hasField(event,"session_id")) throw new GameAnalyticsError("Property 'session_id' is found on the event, but the name is reserved for Session Id, which is set at init.");
 		if(Reflect.hasField(event,"user_id")) throw new GameAnalyticsError("Property 'user_id' is found on the event, but the name is reserved for User Id, which is set at init.");
-		event.build = BUILD;
+		event.build = build;
 		event.session_id = session_id;
 		event.user_id = user_id;
 		var i : Int = 0;
