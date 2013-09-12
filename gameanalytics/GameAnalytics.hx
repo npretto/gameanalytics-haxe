@@ -7,14 +7,10 @@
  */
 package gameanalytics;
 
+import haxe.Http;
 import haxe.Json;
 import haxe.crypto.Md5;
-import flash.errors.IOError;
-import flash.events.Event;
-import flash.events.ErrorEvent;
-import flash.events.IOErrorEvent;
-import flash.events.SecurityErrorEvent;
-import flash.net.*;
+
 
 class GameAnalytics {
 
@@ -112,8 +108,8 @@ class GameAnalytics {
 			}
 			i++;
 		}
-
-		var request : URLRequest = new URLRequest(URL + "/" + API_VERSION + "/" + public_key + "/" + category);
+		var http = new Http(URL + "/" + API_VERSION + "/" + public_key + "/" + category);
+		//var request : URLRequest = new URLRequest(URL + "/" + API_VERSION + "/" + public_key + "/" + category);
 		var event_json : String;
 		try {
 			event_json = Json.stringify(events);
@@ -121,32 +117,39 @@ class GameAnalytics {
 		catch(e : Dynamic) {
 			throw new GameAnalyticsError("There was an error encoding the event as a JSON object. Error: " + e.message);
 		}
-
-		request.data = event_json;
-		request.method = URLRequestMethod.POST;
-		request.requestHeaders.push(new URLRequestHeader("Authorization", Md5.encode(event_json + private_key)));
-		var requestor : URLLoader = new URLLoader();
-		requestor.addEventListener(Event.COMPLETE, httpRequestComplete);
-		requestor.addEventListener(IOErrorEvent.IO_ERROR, httpRequestIOError);
-		requestor.addEventListener(SecurityErrorEvent.SECURITY_ERROR, httpRequestSecurityError);
+		http.setPostData(event_json);
+		//request.data = event_json;
+		//request.method = URLRequestMethod.POST;
+		http.setHeader("Authorization", Md5.encode(event_json + private_key));
+		//request.requestHeaders.push(new URLRequestHeader("Authorization", Md5.encode(event_json + private_key)));
+		//var requestor : URLLoader = new URLLoader();
+		http.onData = httpRequestComplete;
+		//requestor.addEventListener(Event.COMPLETE, httpRequestComplete);
+		http.onError = httpRequestIOError;
+		//requestor.addEventListener(IOErrorEvent.IO_ERROR, httpRequestIOError);
+		//requestor.addEventListener(SecurityErrorEvent.SECURITY_ERROR, httpRequestSecurityError);
 		log("----");
 		log("Sending Game Analytics event:" + ((RUN_IN_EDITOR_PLAY_MODE) ? " (Running in EDITOR PLAY MODE. Not Sending event)" : ""));
-		log("	Url: " + request.url);
+		log("	Url: " + http.url);
 		log("	Header: " + Md5.encode(event_json + private_key));
-		log("	Data: " + request.data);
+		log("	Data: " + event_json);
 		log("----");
-		if(!RUN_IN_EDITOR_PLAY_MODE) requestor.load(request);
+		//if(!RUN_IN_EDITOR_PLAY_MODE) requestor.load(request);*/
+		if (!RUN_IN_EDITOR_PLAY_MODE)
+		{
+			http.request(true);
+		}
 	}
 
-	static function httpRequestComplete(event : Event) : Void {
-		log("Game Analytics Request Complete: " + event.target.data);
+	static function httpRequestComplete(data : String) : Void {
+		log("Game Analytics Request Complete: " + data);
 	}
 
-	static function httpRequestIOError(error : IOErrorEvent) : Void {
-		log("There was an error with the Game Analytics Server. " + error.text);
+	static function httpRequestIOError(msg : String) : Void {
+		log("There was an error with the Game Analytics Server. " + msg);
 	}
 
-	static function httpRequestSecurityError(error : SecurityErrorEvent) : Void {
+	static function httpRequestSecurityError(error : Dynamic) : Void {
 		log("There was an error with the Game Analytics Server. " + error.text);
 	}
 
